@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dream Memory"
+  short_description: "Consolidate Obsidian memory safely."
+  default_prompt: "Run dream-memory to consolidate short-term memory into long-term memory and archive processed notes."

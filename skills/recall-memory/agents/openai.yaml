@@ -1,0 +1,4 @@
+interface:
+  display_name: "Recall Memory"
+  short_description: "Search Obsidian memory before acting."
+  default_prompt: "Search memory for relevant prior learnings before continuing."

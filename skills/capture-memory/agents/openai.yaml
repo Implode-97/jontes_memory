@@ -1,0 +1,4 @@
+interface:
+  display_name: "Capture Memory"
+  short_description: "Write short-term Obsidian learnings."
+  default_prompt: "Capture a short-term memory note for this conversation's useful learning."

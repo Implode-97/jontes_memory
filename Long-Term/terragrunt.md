@@ -1,0 +1,25 @@
+# Terragrunt And IaC Memory
+
+## Data Platform Terragrunt Catalog
+
+- For `data-platform-terragrunt-catalog`, prefer one shared real E2E lane in CI instead of multiple per-stack real deploy jobs.
+- Root test flow should own mandatory setup and cleanup: copy the example tree, generate stacks, run root apply, defer destroy, and clean stacks.
+- Preserve feature-based E2E stages, with names such as `team_identities_assert`, `workspace_assert`, and `catalog_sandbox_assert`, but avoid importing broad Terratest packages when only simple opt-in/out stage gating is needed.
+- Treat local real apply as optional debug work, not the promised default V1 workflow. Keep fast guard checks outside the real deploy lane and require explicit CI mutual exclusion for shared real deploys.
+
+## Terratest Usage
+
+- For Terratest Terragrunt work, verify against current upstream source when deprecations or best-practice drift are in question instead of relying on older docs.
+- Terratest `v1.0.0` uses `StackGenerateContext`, `StackRunContext`, and `StackCleanContext`; upgrading to it raises the Go toolchain requirement to `1.26`, which must be reflected in CI before the upgrade is complete.
+- Avoid `github.com/gruntwork-io/terratest/modules/test-structure` for simple stage gating in this repo. In Terratest `v1.0.0`, it compiles save/load helpers that import heavy optional dependencies such as AWS, Kubernetes, Packer, SSH, OPA, and Terraform. Prefer a tiny local helper unless those save/load helpers are genuinely needed.
+
+## Serverless Budget Policy Reviews
+
+- The serverless budget policy feature moved from workspace-scoped to account-wide/account-scoped. Do not treat account scope or empty workspace bindings as automatically wrong.
+- Still flag stale Jira, docs, or ADR text if it describes a workspace-scoped contract after the implementation has moved to account-level Databricks serverless usage policy semantics.
+- For `dbx_budget_policy` or successor `serverless-budget-policy` work, review account-level naming collision risk, cost attribution tags, and explicit E2E or CI rollout decisions.
+
+## Review Workflow
+
+- The `ng-iac` workspace contains a repo-local `skills/iac-mr-review` skill for reviewing colleague MRs in Data Platform IaC repos.
+- For future catalog, module, and live MR reviews, combine `iac-mr-review` with `iac-code-style`, and check Jira or ADRs before accepting scope changes.
