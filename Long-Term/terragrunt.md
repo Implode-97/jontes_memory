@@ -6,6 +6,14 @@
 - Root test flow should own mandatory setup and cleanup: copy the example tree, generate stacks, run root apply, defer destroy, and clean stacks.
 - Preserve feature-based E2E stages, with names such as `team_identities_assert`, `workspace_assert`, and `catalog_sandbox_assert`, but avoid importing broad Terratest packages when only simple opt-in/out stage gating is needed.
 - Treat local real apply as optional debug work, not the promised default V1 workflow. Keep fast guard checks outside the real deploy lane and require explicit CI mutual exclusion for shared real deploys.
+- Cleanup reliability is a first-order design concern for shared Databricks Terragrunt E2E tests. Add fast guard or pre-hook tests before real apply, make destroy behavior observable, and consider fallback cleanup for account-level resources that are easy to strand.
+- Terraform output assertions are useful, but higher confidence comes from Databricks API checks that resources really exist and were removed.
+
+## Live YAML Inputs
+
+- Live Terragrunt YAML files should describe platform intent in flat, readable structures rather than deeply nested documents.
+- Use `_org/teams.yml` for stable team metadata, optional role override files only for deviations, region or metastore scoped files for sandbox and data product catalogs, and workspace scoped files for bindings such as policies.
+- Preserve the difference between "intentionally empty" and "malformed or missing." Do not silently normalize a missing required top-level key to an empty list.
 
 ## Terratest Usage
 
@@ -22,4 +30,5 @@
 ## Review Workflow
 
 - The `ng-iac` workspace contains a repo-local `skills/iac-mr-review` skill for reviewing colleague MRs in Data Platform IaC repos.
-- For future catalog, module, and live MR reviews, combine `iac-mr-review` with `iac-code-style`, and check Jira or ADRs before accepting scope changes.
+- For future catalog, module, and live MR reviews, combine `iac-mr-review` with `iac-code-style`, fetch or inspect the MR branch, and read the related Jira story, Need field, or ADR before accepting scope changes.
+- Prioritize concrete correctness, safety, CI, migration, and test gaps. Report findings first with severity and file references, not broad rewrites of the MR.
