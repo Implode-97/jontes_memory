@@ -8,6 +8,7 @@
 - Treat local real apply as optional debug work, not the promised default V1 workflow. Keep fast guard checks outside the real deploy lane and require explicit CI mutual exclusion for shared real deploys.
 - Cleanup reliability is a first-order design concern for shared Databricks Terragrunt E2E tests. Add fast guard or pre-hook tests before real apply, make destroy behavior observable, and consider fallback cleanup for account-level resources that are easy to strand.
 - Terraform output assertions are useful, but higher confidence comes from Databricks API checks that resources really exist and were removed.
+- Keep the canonical example root aligned with currently supported regional infrastructure. Moving a downstream feature unit, such as sandbox catalogs, to a supported region is not enough if the root stack still deploys an unsupported regional workspace; either provision the missing shared prerequisites or trim the unsupported region until it can be added back deliberately.
 
 ## Live YAML Inputs
 
