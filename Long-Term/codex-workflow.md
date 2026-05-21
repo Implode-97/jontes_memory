@@ -11,7 +11,7 @@
 
 - The Obsidian Codex memory root is a Git repository on branch `main` with origin `https://github.com/Implode-97/jontes_memory.git`.
 - Repo-local portable copies of `recall-memory`, `capture-memory`, and `dream-memory` live under `skills/` so they can be reused or installed elsewhere.
-- Successful dream runs should create one local commit with a short dated message, but should not push unless the user explicitly asked for pushing in the current run.
+- Successful dream runs in the canonical memory root should create one short dated commit and push it to `origin/main`. This repo is explicitly authorized for automatic dream commits and pushes; non-canonical memory roots should still avoid pushing unless the user asks.
 
 ## Investigation Workflow
 

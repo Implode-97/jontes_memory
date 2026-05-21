@@ -44,7 +44,7 @@ If `Short-Term` contains no `.md` files, exit successfully without creating a ne
 7. Create, update, compact, split, or rename long-term files as needed.
 8. Write one dream log describing all decisions and any long-term refactors.
 9. Archive only files that were fully processed after long-term updates and the dream log are written.
-10. If the memory root is a Git worktree, create a local commit for the completed dream run.
+10. If the memory root is a Git worktree, create a commit for the completed dream run. For the canonical Obsidian Codex memory repo, also push that commit to `origin/main`.
 
 ## Long-Term Shape
 
@@ -140,7 +140,7 @@ Move processed short-term files to:
 
 Preserve original filenames. Archive only after long-term writes and dream log writes succeed. Leave unprocessed or unresolved-conflict files in `Short-Term` and list them in the dream log.
 
-## Git Commit
+## Git Commit And Push
 
 After a successful dream run, check whether the memory root is inside a Git worktree:
 
@@ -162,4 +162,13 @@ dream YYYY-MM-DD: short relevant phrase
 
 Choose a short phrase from the most important promoted, merged, archived, or refactored topic in the dream log. Prefer concrete phrases such as `jira formatting cleanup`, `terragrunt test notes`, or `codex workflow polish`. If no specific topic stands out, use `memory consolidation`.
 
-Do not push automatically unless the user explicitly asked for pushing in the current run or automation prompt.
+For the canonical Obsidian Codex memory repo, pushing is part of a successful dream run:
+
+- Canonical root: `/Users/jnyjc2/Documents/Obsidian Vault/CodexMemory/CodexMemory/Memory`
+- Canonical branch: `main`
+- Canonical remote: `origin` at `https://github.com/Implode-97/jontes_memory.git`
+- After the commit succeeds, run `git push origin main`.
+
+This repository is explicitly authorized for automatic dream commits and pushes. If a tool requires approval to push, request escalation for `git push` and suggest a persistent prefix rule for `["git", "push"]` so future scheduled dream runs can publish automatically.
+
+For any other memory root, commit locally but do not push unless the current user request or automation prompt explicitly asks for pushing.
