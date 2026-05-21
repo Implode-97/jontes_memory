@@ -37,3 +37,9 @@
 - For team-owned external S3 storage, prefer read-oriented ingestion into managed catalogs rather than letting external storage become an uncontrolled write surface.
 - External locations and volumes should respect ownership, workspace binding, and read-only constraints where the feature is explicitly for reference or ingestion.
 - Writes for governed platform data should land in platform-managed catalogs and storage unless the user explicitly changes the governance model.
+
+## Platform Bootstrap And Admin Groups
+
+- Account-level Databricks administration and Unity Catalog object privileges are distinct. A deployer service principal may be able to create account-level resources without automatically owning or being able to create objects inside the metastore after IaC assigns metastore ownership elsewhere.
+- For metastore bootstrap, derive the current IaC deployer from Databricks provider context and add it to the existing metastore admin group instead of making the deployer the metastore owner or passing deployer IDs through Terragrunt inputs.
+- The workspace wrapper should create a platform-prefixed workspace admin group such as `platform-<workspace_name>-workspace-admins`, assign it `ADMIN` on the workspace, and include the current deployment service principal. Keep `admin` for permission-bearing platform groups; do not overload team role names such as `owner`.
