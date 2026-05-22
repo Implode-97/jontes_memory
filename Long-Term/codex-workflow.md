@@ -21,3 +21,4 @@
 ## Skill Authoring
 
 - Skills for this user must be cold-start usable by an agent with no surrounding conversation context. State the purpose, required inputs, source of truth, workflow, decision rules, and expected output explicitly.
+- A local `handoff` skill exists at `/Users/jnyjc2/.codex/skills/handoff`. Use it when the user asks for a handoff, continuation note, context transfer, session summary, or to prepare the next Codex session; it should produce a concise Markdown handoff file in the OS temporary directory and report that path.

@@ -41,5 +41,25 @@
 ## Platform Bootstrap And Admin Groups
 
 - Account-level Databricks administration and Unity Catalog object privileges are distinct. A deployer service principal may be able to create account-level resources without automatically owning or being able to create objects inside the metastore after IaC assigns metastore ownership elsewhere.
-- For metastore bootstrap, derive the current IaC deployer from Databricks provider context and add it to the existing metastore admin group instead of making the deployer the metastore owner or passing deployer IDs through Terragrunt inputs.
+- For metastore bootstrap, add the current IaC deployer service principal to the existing metastore admin group instead of making the deployer the metastore owner.
+- For account-scoped wrappers, pass an explicit `deployer_service_principal_application_id` from account or environment config and resolve it through account-compatible Databricks service-principal data sources. Do not rely on `databricks_current_user` with an account-scoped provider because it requires workspace context and fails without a `workspace_id`.
+- Source the deployer application/client ID from the CI identity, normally `DATABRICKS_CLIENT_ID`, rather than a display-name lookup or one generic global service-principal ID. If multi-account deployment becomes real, use per-account CI environments or account-scoped live config.
 - The workspace wrapper should create a platform-prefixed workspace admin group such as `platform-<workspace_name>-workspace-admins`, assign it `ADMIN` on the workspace, and include the current deployment service principal. Keep `admin` for permission-bearing platform groups; do not overload team role names such as `owner`.
+
+## Workspace Permission Ordering
+
+- New Databricks workspaces can reject `databricks_mws_permission_assignment` with `Permission assignment APIs are not available for this workspace` when permission assignment races ahead of metastore assignment and identity federation.
+- Workspace admin group or principal assignment should depend on the full workspace module or metastore-assignment completion, not only on `module.workspace.workspace_id`, because the workspace ID can be known before the child module has finished enabling identity federation.
+- If the same error persists after explicit dependency ordering, investigate Databricks eventual consistency before broadening the module contract.
+
+## Real-Provider Tests
+
+- Real-provider Databricks tests should use pinned IDs for actual shared test resources, not all-zero or made-up UUID placeholders.
+- In the shared Databricks account-level module test environment for `data-platform-terraform-modules`, the deployer service-principal application/client ID is `f425e414-e206-48d5-80ab-6d537930d0d7`.
+
+## Serverless GPU / AI Runtime
+
+- Databricks Serverless GPU is exposed as AI Runtime on Databricks Serverless, not as classic GPU clusters, Databricks Runtime ML, cluster policies, init scripts, or Docker images.
+- Platform users choose Serverless GPU / AI Runtime from notebooks or jobs, then select an accelerator such as A10 or H100 and a managed serverless environment version.
+- Current v5 environment notes include Ubuntu 24.04.2, Python 3.12.3, Databricks Connect 18.0.0, and CUDA Toolkit 12.9. The v5 Standard/base GPU environment is intentionally minimal and does not include PyTorch; use AI v5 or explicit `%pip` / environment dependencies for ML libraries.
+- Treat serverless GPU as a governed, preview, region-limited capability controlled through previews, usage policies, tags, environment dependency standards, and documented notebook/job templates.

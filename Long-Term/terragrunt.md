@@ -10,6 +10,8 @@
 - Add explicit cleanup targets for new E2E features, and add fast guard or pre-hook tests before real apply. Guard coverage should catch lifecycle hook asymmetry between `plan`/`apply` and `destroy`, dependency outputs needed during destroy-time provider rendering, mock allow-lists that hide real destroy inputs, and output-driven prior-state row removals.
 - Terraform output assertions are useful, but higher confidence comes from Databricks API checks that resources really exist and were removed.
 - Keep the canonical example root aligned with currently supported regional infrastructure. Moving a downstream feature unit, such as sandbox catalogs, to a supported region is not enough if the root stack still deploys an unsupported regional workspace; either provision the missing shared prerequisites or trim the unsupported region until it can be added back deliberately.
+- In `data-platform-terragrunt-catalog`, centralize the Databricks deployer service-principal application/client ID in `example/non-prod-env/_common_vars.hcl` as `databricks_deployer_service_principal_application_id = get_env("DATABRICKS_CLIENT_ID")`. Feature units such as `dbx_metastore` and `dbx_workspace` should pass `local.common.databricks_deployer_service_principal_application_id` to wrapper inputs.
+- When validating generated stack units, inspect the rendered `.terragrunt-stack` units under `example/non-prod-env/...`; raw `units/*` templates can fail outside their parent root/common file context.
 
 ## Live YAML Inputs
 
