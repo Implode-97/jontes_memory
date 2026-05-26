@@ -20,3 +20,7 @@
 - For ordinary resource modules, real apply tests are preferred when credentials and environment allow it. For expensive or slow resources such as full Databricks workspaces or broad wrappers, use real provider plan tests and mock-provider apply tests.
 - Do not rely on `prevent_destroy` as a cleanup safety net in tests; if a resource is removed from code, Terraform no longer enforces that lifecycle rule.
 - Focus Terraform tests on contract, naming, policy shape, invalid inputs, and lifecycle-sensitive behavior. State clearly when validation is limited to plan or mocks.
+
+## Comments And Workarounds
+
+- For platform IaC comments that document bugs, timing-sensitive dependencies, provider quirks, or other unusual behavior, use a concise tracked format: `// jnyjc2 YYYY-MM-DD: practical reason.` Avoid long explanatory paragraphs unless the surrounding code genuinely needs that context.

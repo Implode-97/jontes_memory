@@ -12,6 +12,7 @@
 
 - Each team normally gets one sandbox catalog in the dev workspace. Additional per-region sandboxes are allowed only when transfer costs or regional GPU constraints justify them.
 - Sandbox catalogs are built from S3 root storage, storage credential, external location, and catalog root configuration.
+- Databricks external-location validation can race AWS IAM propagation if it checks an S3 role within milliseconds of policy or trust creation. For sandbox catalog modules and wrappers, use an intentional readiness delay or retry when CI shows correct credential and policy shape but Databricks reports missing S3 read access immediately after IAM creation.
 - They are dev-workspace collaboration areas, not productionized data products. Do not grant other teams access by default.
 - The owning team role should create and manage schemas and tables, while individual object owners can decide how broadly to share child objects within the team.
 - Keep region-specific sandbox declarations in that region's YAML and avoid cross-region entries unless the use case explicitly requires them.
@@ -56,6 +57,7 @@
 
 - Real-provider Databricks tests should use pinned IDs for actual shared test resources, not all-zero or made-up UUID placeholders.
 - In the shared Databricks account-level module test environment for `data-platform-terraform-modules`, the deployer service-principal application/client ID is `f425e414-e206-48d5-80ab-6d537930d0d7`.
+- For the sandbox catalog wrapper real apply test in `data-platform-terraform-modules`, use the shared dev workspace as a test fixture: host `https://dbc-b72ad987-f679.cloud.databricks.com`, workspace ID `4022911453310458`, Databricks account ID `47dc11d5-0e29-4a29-b9b0-9d3d3961e518`, region `eu-west-1`, and metastore ID `3f86dad4-0a1b-4efb-9bcd-e32a1a541300`. Prefer these as test defaults over required CI `TF_VAR_databricks_workspace_host` or `TF_VAR_databricks_workspace_id` wiring for that real test.
 
 ## Serverless GPU / AI Runtime
 
