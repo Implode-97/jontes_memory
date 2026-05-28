@@ -5,6 +5,7 @@
 - The user wants duplicate explanations reduced, but not at the cost of losing important operational detail.
 - Keep top-level docs light and navigable, while preserving troubleshooting, pipeline behavior, authentication failure modes, and architecture wiring details in the specialized deep docs.
 - When simplifying repo docs, avoid collapsing detailed operational pages into broad summaries unless the same actionable detail remains available elsewhere.
+- Module READMEs should describe stable behavior, input contracts, provider expectations, validation commands, and durable prerequisites. Avoid development-log wording about current test status, recent moves, or one-off implementation progress; frame test details as validation prerequisites or environment facts when they must remain.
 
 ## ADRs And Plans
 

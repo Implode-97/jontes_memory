@@ -13,6 +13,7 @@
 - In `data-platform-terragrunt-catalog`, centralize the Databricks deployer service-principal application/client ID in `example/non-prod-env/_common_vars.hcl` as `databricks_deployer_service_principal_application_id = get_env("DATABRICKS_CLIENT_ID")`. Feature units such as `dbx_metastore` and `dbx_workspace` should pass `local.common.databricks_deployer_service_principal_application_id` to wrapper inputs.
 - When validating generated stack units, inspect the rendered `.terragrunt-stack` units under `example/non-prod-env/...`; raw `units/*` templates can fail outside their parent root/common file context.
 - For catalog MR !21 / CAV-132831 continuation, the corrected registry pins from modules pipeline `7662011` are `databricks-account-metastore-wrapper/databricks` `0.4.0`, `databricks-account-metastore/databricks` `0.4.0`, `aws-databricks-workspace-wrapper/aws` `0.5.0`, and `aws-databricks-workspace/aws` `0.5.0`; branch commit `fe3f660` updated `dbx_metastore` and `dbx_workspace` to those wrapper versions.
+- After the sandbox catalog wrapper package rename, catalog units should use `aws-databricks-account-catalog-wrapper-sandbox/aws`, not the old `aws-databricks-catalog-wrapper-sandbox/aws`. Renamed GitLab Terraform module packages can reset to version `0.1.0`, so verify the exact package name and version in the registry instead of assuming monotonic versions across renames.
 
 ## Live YAML Inputs
 

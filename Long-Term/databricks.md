@@ -17,6 +17,12 @@
 - The owning team role should create and manage schemas and tables, while individual object owners can decide how broadly to share child objects within the team.
 - Keep region-specific sandbox declarations in that region's YAML and avoid cross-region entries unless the use case explicitly requires them.
 
+## Unity Catalog Workspace Bindings
+
+- For Unity Catalog modules, configured provider workspace is execution context only; `workspace_ids` owns the resource access contract. A non-empty set means selected-workspace mode for exactly those IDs, while an empty set is valid all-workspaces/open mode and should set the securable isolation mode open instead of only omitting binding resources.
+- For isolated securables created through a workspace anchor, leave Databricks' automatic anchor binding unmanaged. Resolve one `workspace_binding_anchor_id` for `provider_config`, manage explicit bindings only for the remaining selected workspaces, make grants use the same anchor, and force replacement when the anchor changes so stale automatic bindings do not survive.
+- Do not add `provider_workspace_id` inputs or infer selected bindings from the configured provider workspace.
+
 ## Data Products
 
 - Productionized Databricks data products should be managed by a dedicated service principal tied to the product's GitLab repository, preferably through OIDC or federation instead of long-lived raw tokens.

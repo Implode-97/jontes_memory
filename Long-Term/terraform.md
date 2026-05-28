@@ -9,6 +9,7 @@
 
 ## Module Boundaries
 
+- Name module folders by their primary provider context rather than only by domain. Unity Catalog account-scoped modules should use `databricks-account-*`; wrappers combining AWS resources with Databricks account-scoped behavior should use `aws-databricks-account-*`. Use `git mv` for renames so MRs show clean moves.
 - Keep lower-level Terraform modules such as secure S3 bucket, IAM role, and security group modules generic enough for non-Databricks use.
 - Put Databricks-specific policy documents, descriptions, pass-role defaults, workspace wiring, and root-storage semantics in Databricks wrapper modules or Terragrunt composition.
 - If a reusable AWS module contains hard-coded Databricks language, move that specificity into the wrapper unless the module contract is truly Databricks-specific.
