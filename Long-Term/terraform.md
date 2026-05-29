@@ -21,6 +21,7 @@
 - For ordinary resource modules, real apply tests are preferred when credentials and environment allow it. For expensive or slow resources such as full Databricks workspaces or broad wrappers, use real provider plan tests and mock-provider apply tests.
 - Do not rely on `prevent_destroy` as a cleanup safety net in tests; if a resource is removed from code, Terraform no longer enforces that lifecycle rule.
 - Focus Terraform tests on contract, naming, policy shape, invalid inputs, and lifecycle-sensitive behavior. State clearly when validation is limited to plan or mocks.
+- For dependent child resources, Terraform destroys children before parents. Databricks Unity Catalog modules intentionally use separate explicit workspace-binding resources so non-anchor workspace access is removed before the securable is deleted.
 
 ## Comments And Workarounds
 

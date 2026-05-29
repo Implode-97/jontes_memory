@@ -19,9 +19,10 @@
 
 ## Unity Catalog Workspace Bindings
 
-- For Unity Catalog modules, configured provider workspace is execution context only; `workspace_ids` owns the resource access contract. A non-empty set means selected-workspace mode for exactly those IDs, while an empty set is valid all-workspaces/open mode and should set the securable isolation mode open instead of only omitting binding resources.
-- For isolated securables created through a workspace anchor, leave Databricks' automatic anchor binding unmanaged. Resolve one `workspace_binding_anchor_id` for `provider_config`, manage explicit bindings only for the remaining selected workspaces, make grants use the same anchor, and force replacement when the anchor changes so stale automatic bindings do not survive.
-- Do not add `provider_workspace_id` inputs or infer selected bindings from the configured provider workspace.
+- `workspace_ids` owns the caller-facing resource access contract. A non-empty set means selected-workspace mode for exactly those IDs, while an empty set is valid all-workspaces/open mode and should set the securable isolation mode open instead of only omitting binding resources.
+- Workspace-level providers automatically bind the creating workspace for isolated securables. Lower modules should own the Databricks-specific subtraction/anchor logic, using `provider_workspace_id` or `workspace_binding_anchor_id` only to model that implicit binding and validate selected-workspace mode; wrappers and Terragrunt callers should still pass the unmutated intended `workspace_ids` set.
+- Leave Databricks' automatic provider/anchor workspace binding unmanaged. Manage explicit `databricks_workspace_binding` resources only for remaining selected workspaces, make grants use the same anchor, and force replacement when the anchor changes so stale automatic bindings do not survive.
+- Separate explicit binding resources are a useful lifecycle edge for non-anchor workspaces: Terraform creates the securable first and bindings after it, then destroys explicit bindings before deleting the securable. Do not explicitly manage the automatic provider/anchor binding, because removing that access before deleting the securable can break teardown.
 
 ## Data Products
 
