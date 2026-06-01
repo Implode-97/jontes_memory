@@ -66,6 +66,12 @@
 - In the shared Databricks account-level module test environment for `data-platform-terraform-modules`, the deployer service-principal application/client ID is `f425e414-e206-48d5-80ab-6d537930d0d7`.
 - For the sandbox catalog wrapper real apply test in `data-platform-terraform-modules`, use the shared dev workspace as a test fixture: host `https://dbc-b72ad987-f679.cloud.databricks.com`, workspace ID `4022911453310458`, Databricks account ID `47dc11d5-0e29-4a29-b9b0-9d3d3961e518`, region `eu-west-1`, and metastore ID `3f86dad4-0a1b-4efb-9bcd-e32a1a541300`. Prefer these as test defaults over required CI `TF_VAR_databricks_workspace_host` or `TF_VAR_databricks_workspace_id` wiring for that real test.
 
+## Spark Performance
+
+- For I/O-bound Spark workloads reading Unity Catalog Volumes, start with config-level and file-layout levers when practical: file scan partition sizing, file open cost, input partition count, parallel file discovery, shuffle partitioning only when relevant, and current Databricks runtime defaults.
+- Distinguish Spark file-source reads from custom code opening `/Volumes/...` paths inside tasks. Spark file-source configs only help the Spark read path; Delta/table layout conversion or per-task threaded I/O may be the realistic fix for custom file reads.
+- `spark.task.cpus` cannot be fractional, and Spark cannot oversubscribe task slots per CPU through that setting.
+
 ## Serverless GPU / AI Runtime
 
 - Databricks Serverless GPU is exposed as AI Runtime on Databricks Serverless, not as classic GPU clusters, Databricks Runtime ML, cluster policies, init scripts, or Docker images.
