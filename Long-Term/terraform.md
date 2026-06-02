@@ -22,6 +22,7 @@
 - Do not rely on `prevent_destroy` as a cleanup safety net in tests; if a resource is removed from code, Terraform no longer enforces that lifecycle rule.
 - Focus Terraform tests on contract, naming, policy shape, invalid inputs, and lifecycle-sensitive behavior. State clearly when validation is limited to plan or mocks.
 - For dependent child resources, Terraform destroys children before parents. Databricks Unity Catalog modules intentionally use separate explicit workspace-binding resources so non-anchor workspace access is removed before the securable is deleted.
+- For Databricks external locations, do not treat `enable_file_events` as a standalone boolean. Terraform requires queue configuration such as `file_event_queue` plus the matching IAM, tests, and rollout notes; keep file events outside the default module contract until that complete feature is implemented.
 
 ## Comments And Workarounds
 
