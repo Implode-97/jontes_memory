@@ -49,6 +49,12 @@
 - External locations and volumes should respect ownership, workspace binding, and read-only constraints where the feature is explicitly for reference or ingestion.
 - Writes for governed platform data should land in platform-managed catalogs and storage unless the user explicitly changes the governance model.
 
+## Apps And User Pass-Through
+
+- In Databricks Apps, default SDK clients such as `WorkspaceClient()` use the app service principal from injected environment variables. User pass-through requires explicitly using the forwarded `x-forwarded-access-token`.
+- When debugging app data-access failures, trace every SQL Statements call, Files API call, Unity Catalog table read, volume-file read, and helper fallback to its exact credential source. Mixed SDK default auth, direct REST calls with user tokens, and Streamlit caches can make path discovery and file reads run under different principals.
+- When user authorization is intended, prefer fail-fast diagnostics over silent service-principal fallback. Check declared user scopes, app resource grants, and any cached per-user tokens before treating a UC or volume read failure as a table, path, or Spark issue.
+
 ## Platform Bootstrap And Admin Groups
 
 - Account-level Databricks administration and Unity Catalog object privileges are distinct. A deployer service principal may be able to create account-level resources without automatically owning or being able to create objects inside the metastore after IaC assigns metastore ownership elsewhere.
