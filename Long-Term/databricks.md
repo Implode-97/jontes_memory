@@ -13,6 +13,7 @@
 - Each team normally gets one sandbox catalog in the dev workspace. Additional per-region sandboxes are allowed only when transfer costs or regional GPU constraints justify them.
 - Sandbox catalogs are built from S3 root storage, storage credential, external location, and catalog root configuration.
 - Databricks external-location validation can race AWS IAM propagation if it checks an S3 role within milliseconds of policy or trust creation. For sandbox catalog modules and wrappers, use an intentional readiness delay or retry when CI shows correct credential and policy shape but Databricks reports missing S3 read access immediately after IAM creation.
+- Fresh workspace/metastore Terragrunt E2E can still hit Unity Catalog readiness lag after Terraform-visible `databricks_metastore_assignment` completion. Treat large pre-sandbox sleeps as diagnostic evidence; prefer bounded polling of account metastore assignment, workspace current-metastore visibility, and storage credential or external-location validation for the exact target URL once the IAM role exists.
 - For Terraform-managed sandbox catalogs, set the catalog owner to the platform or regional metastore owner group and grant the team owner/admin principal `ALL_PRIVILEGES`. `ALL_PRIVILEGES` does not include `MANAGE`, so the team can broadly operate in the catalog without receiving grant-management, ownership-transfer, or delete authority that can break Terraform cleanup.
 - Ordinary principals need catalog ownership, or both `MANAGE` and `USE CATALOG` on the catalog, to delete it. Metastore-level `CREATE CATALOG`, account admin, workspace admin, and catalog `ALL_PRIVILEGES` are not equivalent catalog-delete authority unless the principal is also a metastore admin or has catalog-scoped authority.
 - Do not half-enable Databricks file events in Terraform modules. If file events are supported, implement `enable_file_events`, the required `file_event_queue` configuration, matching S3 notification and SNS/SQS IAM permissions, tests, and cost/governance notes together; otherwise leave file events out or disabled rather than setting only the boolean or only broad `csms-*` permissions.
@@ -54,6 +55,7 @@
 - In Databricks Apps, default SDK clients such as `WorkspaceClient()` use the app service principal from injected environment variables. User pass-through requires explicitly using the forwarded `x-forwarded-access-token`.
 - When debugging app data-access failures, trace every SQL Statements call, Files API call, Unity Catalog table read, volume-file read, and helper fallback to its exact credential source. Mixed SDK default auth, direct REST calls with user tokens, and Streamlit caches can make path discovery and file reads run under different principals.
 - When user authorization is intended, prefer fail-fast diagnostics over silent service-principal fallback. Check declared user scopes, app resource grants, and any cached per-user tokens before treating a UC or volume read failure as a table, path, or Spark issue.
+- For the Databricks App volume image-loading user-token auth support trace, use Jira `CAV-133791`; it is under Firecrackers Support PI2616 and records the explicit forwarded-token `WorkspaceClient(..., auth_type="pat")` fix.
 
 ## Platform Bootstrap And Admin Groups
 
@@ -67,7 +69,7 @@
 
 - New Databricks workspaces can reject `databricks_mws_permission_assignment` with `Permission assignment APIs are not available for this workspace` when permission assignment races ahead of metastore assignment and identity federation.
 - Workspace admin group or principal assignment should depend on the full workspace module or metastore-assignment completion, not only on `module.workspace.workspace_id`, because the workspace ID can be known before the child module has finished enabling identity federation.
-- If the same error persists after explicit dependency ordering, investigate Databricks eventual consistency before broadening the module contract.
+- If the same error, or downstream workspace-level UC API failures, persist after explicit dependency ordering, investigate Databricks eventual consistency and poll readiness before broadening the module contract.
 
 ## Real-Provider Tests
 
