@@ -7,6 +7,8 @@
 - IaC should handle groups that may already exist from SCIM or IdP sync and may create empty account-level groups when they are not synced yet.
 - Workspace assignment is a separate feature boundary. Do not collapse role groups into one team group or make identity ownership imply workspace membership.
 - Prefer underscore `snake_case` for Databricks team keys, role group names, YAML registry fields, and generated IaC-facing identifiers unless a provider or existing resource contract requires another format.
+- For account group membership modules, preserve the explicit lookup-only boundary: resolve existing target groups, users, nested groups, and service principals; create typed `databricks_group_member` resources; and do not create identities, entitlements, Unity Catalog permissions, or polymorphic membership abstractions in that helper.
+- Account group naming validation belongs closest to the wrappers that derive group display names. Leaf group modules can enforce non-null, no-whitespace, and length hygiene, but dense regexes for team roles, workspace entitlement profiles, or legacy groups should stay aligned with current generators and tests.
 
 ## Sandbox Catalogs
 
@@ -27,6 +29,16 @@
 - Workspace-level providers automatically bind the creating workspace for isolated securables. Lower modules should own the Databricks-specific subtraction/anchor logic, using `provider_workspace_id` or `workspace_binding_anchor_id` only to model that implicit binding and validate selected-workspace mode; wrappers and Terragrunt callers should still pass the unmutated intended `workspace_ids` set.
 - Leave Databricks' automatic provider/anchor workspace binding unmanaged. Manage explicit `databricks_workspace_binding` resources only for remaining selected workspaces, make grants use the same anchor, and force replacement when the anchor changes so stale automatic bindings do not survive.
 - Separate explicit binding resources are a useful lifecycle edge for non-anchor workspaces: Terraform creates the securable first and bindings after it, then destroys explicit bindings before deleting the securable. Do not explicitly manage the automatic provider/anchor binding, because removing that access before deleting the securable can break teardown.
+- Put the selected/open workspace contract and provider-workspace invariant near `workspace_ids` and `provider_workspace_id` variable descriptions. Otherwise the provider workspace ID looks arbitrary, especially when `workspace_ids = []`.
+- For AWS storage credentials, document the external-ID bootstrap accurately: create a placeholder trust, create the Databricks storage credential, read the returned external ID, then finalize IAM trust and self-assumption policy. Wrapper modules may use `skip_validation = true` for credential creation while later external-location validation remains meaningful.
+- For catalog, external-location, and storage-credential module outputs, preserve narrow bootstrap and wiring facts such as `name`, `external_id`, explicit `workspace_bindings`, validation flags, and lifecycle/destroy markers. Avoid duplicate broad provider-shaped objects unless a named wrapper or Terragrunt consumer needs them.
+
+## Workspace Assignments And Entitlements
+
+- Databricks workspace assignment wrappers should keep account and workspace provider responsibilities explicit. The default/account provider can own account groups and `databricks_mws_permission_assignment`; a `databricks.workspace` alias is appropriate only for workspace group lookup and entitlement resources.
+- As of the June 2026 review notes, Databricks system-group entitlements are moving toward locked behavior: `users` entitlement hardening through Terraform is a legacy or migration concern, not a durable workflow to build new public contracts around. Before changing this area, re-check current Databricks docs.
+- Preserve `workspace_team_assignments` as the stable downstream contract for workspace-scoped consumers such as cluster or compute policy modules. Treat `workspace_users_baseline`, entitlement diagnostics, provider-owned assignment IDs, and membership-resource IDs as diagnostic or test-shaped unless real consumers need them.
+- For team role assignment defaults, the useful semantic mapping is `consumer -> workspace_consume`, `reader -> sql_access`, and `contributor -> workspace_access`; avoid duplicating dev/prd mock fixtures unless the environment changes that contract.
 
 ## Data Products
 
@@ -42,6 +54,7 @@
 - Mandatory tags should include owning team, billing cost center, principal name, principal type, data product, and deployment target.
 - Product teams may add finer-grained tags, but they must not overwrite platform cost tracking. Keep optional free-text job tags out of platform-managed core unless the platform can validate them safely.
 - Default policy profiles should be platform-owned, with additional larger policies declared separately and intentionally bound.
+- For compute policy modules, keep deterministic policy rendering separate from output shaping: module-owned JSON rules, hidden `custom_tags.*` injection, and separate `CAN_USE` permissions are valuable; broad `policy_assignments` or rendered-policy outputs need observed consumers before becoming public API.
 
 ## External Storage
 
@@ -49,6 +62,11 @@
 - For team-owned external S3 storage, prefer read-oriented ingestion into managed catalogs rather than letting external storage become an uncontrolled write surface.
 - External locations and volumes should respect ownership, workspace binding, and read-only constraints where the feature is explicitly for reference or ingestion.
 - Writes for governed platform data should land in platform-managed catalogs and storage unless the user explicitly changes the governance model.
+
+## AWS Networking For Databricks
+
+- For Databricks AWS customer-managed VPC security groups, verify current Databricks docs before freezing ports. The June 2026 review notes treated self TCP/UDP, outbound 443, 3306, 8443, 8444, 8445, reserved 8446-8451, and conditional Lakebase 5432 as the relevant contract.
+- Security group modules should keep separate rule resources for state clarity, use stable caller-chosen keys for custom egress rules, validate IPv4 CIDRs when using `cidr_ipv4`, and avoid broad future-port toggles unless the platform intentionally supports those ports now.
 
 ## Apps And User Pass-Through
 
@@ -64,6 +82,7 @@
 - For account-scoped wrappers, pass an explicit `deployer_service_principal_application_id` from account or environment config and resolve it through account-compatible Databricks service-principal data sources. Do not rely on `databricks_current_user` with an account-scoped provider because it requires workspace context and fails without a `workspace_id`.
 - Source the deployer application/client ID from the CI identity, normally `DATABRICKS_CLIENT_ID`, rather than a display-name lookup or one generic global service-principal ID. If multi-account deployment becomes real, use per-account CI environments or account-scoped live config.
 - The workspace wrapper should create a platform-prefixed workspace admin group such as `platform-<workspace_name>-workspace-admins`, assign it `ADMIN` on the workspace, and include the current deployment service principal. Keep `admin` for permission-bearing platform groups; do not overload team role names such as `owner`.
+- For workspace bootstrap wrappers, explicit `depends_on` is justified when it protects hidden Databricks readiness, such as permission assignment only becoming available after metastore assignment enables identity federation. Name the exact hidden readiness in comments, and replace broad module-level dependencies only when child modules expose precise readiness outputs.
 
 ## Workspace Permission Ordering
 
