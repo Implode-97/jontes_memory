@@ -9,6 +9,7 @@
 - Prefer underscore `snake_case` for Databricks team keys, role group names, YAML registry fields, and generated IaC-facing identifiers unless a provider or existing resource contract requires another format.
 - For account group membership modules, preserve the explicit lookup-only boundary: resolve existing target groups, users, nested groups, and service principals; create typed `databricks_group_member` resources; and do not create identities, entitlements, Unity Catalog permissions, or polymorphic membership abstractions in that helper.
 - Account group naming validation belongs closest to the wrappers that derive group display names. Leaf group modules can enforce non-null, no-whitespace, and length hygiene, but dense regexes for team roles, workspace entitlement profiles, or legacy groups should stay aligned with current generators and tests.
+- Team identity Terragrunt guards should preserve fail-closed lifecycle protection, final-row deletion protection, prior-state lookup through `terraform output -json`, and all-violations reporting. Cleanup pressure should stay narrow: duplicated input-shape validation, dense jq state matrices, unsupported comment stripping for generated JSON, hidden missing-output bootstrap semantics, and wrappers that use `exec` after installing an `EXIT` cleanup trap.
 
 ## Sandbox Catalogs
 
@@ -39,6 +40,8 @@
 - As of the June 2026 review notes, Databricks system-group entitlements are moving toward locked behavior: `users` entitlement hardening through Terraform is a legacy or migration concern, not a durable workflow to build new public contracts around. Before changing this area, re-check current Databricks docs.
 - Preserve `workspace_team_assignments` as the stable downstream contract for workspace-scoped consumers such as cluster or compute policy modules. Treat `workspace_users_baseline`, entitlement diagnostics, provider-owned assignment IDs, and membership-resource IDs as diagnostic or test-shaped unless real consumers need them.
 - For team role assignment defaults, the useful semantic mapping is `consumer -> workspace_consume`, `reader -> sql_access`, and `contributor -> workspace_access`; avoid duplicating dev/prd mock fixtures unless the environment changes that contract.
+- Workspace assignment Terragrunt guards should preserve the account/workspace provider split, workspace dependency, team-identity ordering, generated lifecycle output, and row-removal protection. The registry invariant is that active placement rows (`enabled` or `destroy_pending`) reference enabled team rows, while destroyed placements are ignored.
+- Keep workspace-assignment generated input validation self-contained at every hook that consumes it. Either run the required-input guard before validate-time registry checks or make the registry guard validate the `teams` and `workspace_teams` array shapes itself; do not let missing or malformed `workspace_team_lifecycle_states.value` look like a proven first apply.
 
 ## Data Products
 
