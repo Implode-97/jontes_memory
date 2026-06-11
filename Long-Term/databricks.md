@@ -46,6 +46,7 @@
 ## Data Products
 
 - Productionized Databricks data products should be managed by a dedicated service principal tied to the product's GitLab repository, preferably through OIDC or federation instead of long-lived raw tokens.
+- DDS Simulation ingestion Databricks token-expiry support is tracked by Jira `CAV-134024` under Firecrackers Support PI2616. `firecrackers-sp` was inferred as the deployment service principal; a Databricks token was created and uploaded to the GitLab CI/CD variables, and the story was resolved as Done while Nishant's retry or merge-path confirmation was still pending. Treat the support action as complete unless Nishant reports the rerun still fails.
 - Team groups should not directly control productionized products. Development happens in the team's sandbox; staging or UAT validates changes before production; jobs normally run in the prod workspace for prod targets.
 - Catalog naming examples use `dp_<product>_<target>`, such as `dp_car_images_prd` or `dp_car_images_uat`, while leaving room for SIT/UAT variants.
 - Model repo-bound service principals, federation policy, catalog ownership, and target environments explicitly instead of letting team group permissions blur the lifecycle.
