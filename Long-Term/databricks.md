@@ -10,6 +10,7 @@
 - For account group membership modules, preserve the explicit lookup-only boundary: resolve existing target groups, users, nested groups, and service principals; create typed `databricks_group_member` resources; and do not create identities, entitlements, Unity Catalog permissions, or polymorphic membership abstractions in that helper.
 - Account group naming validation belongs closest to the wrappers that derive group display names. Leaf group modules can enforce non-null, no-whitespace, and length hygiene, but dense regexes for team roles, workspace entitlement profiles, or legacy groups should stay aligned with current generators and tests.
 - Team identity Terragrunt guards should preserve fail-closed lifecycle protection, final-row deletion protection, prior-state lookup through `terraform output -json`, and all-violations reporting. Cleanup pressure should stay narrow: duplicated input-shape validation, dense jq state matrices, unsupported comment stripping for generated JSON, hidden missing-output bootstrap semantics, and wrappers that use `exec` after installing an `EXIT` cleanup trap.
+- For least-privilege Databricks group workflows, prefer IdP-managed groups or workspace-admin UI/direct REST over account-admin Terraform when possible. As of June 2026, workspace admins and group managers can use workspace-domain account SCIM proxy paths such as `/api/2.0/account/scim/v2/`, while the Terraform provider's account group resources and `databricks account groups-v2` CLI commands target account-host SCIM APIs and should still be treated as account-admin automation unless proven otherwise in the target account and provider/CLI version.
 
 ## Sandbox Catalogs
 
@@ -33,6 +34,11 @@
 - Put the selected/open workspace contract and provider-workspace invariant near `workspace_ids` and `provider_workspace_id` variable descriptions. Otherwise the provider workspace ID looks arbitrary, especially when `workspace_ids = []`.
 - For AWS storage credentials, document the external-ID bootstrap accurately: create a placeholder trust, create the Databricks storage credential, read the returned external ID, then finalize IAM trust and self-assumption policy. Wrapper modules may use `skip_validation = true` for credential creation while later external-location validation remains meaningful.
 - For catalog, external-location, and storage-credential module outputs, preserve narrow bootstrap and wiring facts such as `name`, `external_id`, explicit `workspace_bindings`, validation flags, and lifecycle/destroy markers. Avoid duplicate broad provider-shaped objects unless a named wrapper or Terragrunt consumer needs them.
+
+## Catalog Renames
+
+- Stable Terragrunt registry keys, such as UUIDs separate from catalog names, can preserve Terraform resource addresses across Databricks catalog renames, but they do not by themselves solve provider state. As of June 2026, Databricks exposes catalog rename support in the platform/API SDKs, while the Terraform provider still treats `databricks_catalog.id` as name-based and has known rename failure risk.
+- For catalog rename support, recommend explicit migrations: rename through API/UI when required, then remove/import Terraform state for the catalog and any dependent name-keyed resources. Avoid hiding rename behavior in a generic module until the provider has tested native rename support.
 
 ## Workspace Assignments And Entitlements
 
@@ -59,10 +65,14 @@
 - Product teams may add finer-grained tags, but they must not overwrite platform cost tracking. Keep optional free-text job tags out of platform-managed core unless the platform can validate them safely.
 - Default policy profiles should be platform-owned, with additional larger policies declared separately and intentionally bound.
 - For compute policy modules, keep deterministic policy rendering separate from output shaping: module-owned JSON rules, hidden `custom_tags.*` injection, and separate `CAN_USE` permissions are valuable; broad `policy_assignments` or rendered-policy outputs need observed consumers before becoming public API.
+- In the current team identity hierarchy, `owner` is nested into `privileged_contributor`, which is nested into `contributor`, then lower roles. For team sandbox compute policies, granting `CAN_USE` to `grp_team_<team_key>_contributor` covers contributor, privileged contributor, and owner members; duplicate grants to higher nested role groups are usually noise.
+- Split automatic low-cost default compute policies from higher-cost, ML-oriented, or otherwise special policies. Defaults should arrive automatically when a team is assigned to a workspace; explicit policies should be additive, approved separately, and modeled with distinct profile or policy identities rather than as overrides of the default path.
 
 ## External Storage
 
 - The platform goal is to remain the single governance surface for data.
+- For enterprise MLOps and autonomous-driving training, treat Unity Catalog as the source of truth for authorization, discovery, lineage, and model/data governance, not as a literal ban on all physical S3 access. Direct access to UC managed storage remains a hard no, but the platform should offer governed paved roads such as UC tables and volumes for discovery/manifests, credential vending or Open APIs where supported, regional AWS training stacks such as SageMaker, HyperPod, or EKS with tightly scoped short-lived or brokered S3 access, and write-back of lineage, artifacts, and models into UC/MLflow.
+- Challenge blanket S3 bans that lack usable MLOps paths. Prefer productized exceptions with audit, TTL, owner, tags, and registry-driven IAM, S3, or Lake Formation controls over ad hoc roles or direct bucket grants.
 - For team-owned external S3 storage, prefer read-oriented ingestion into managed catalogs rather than letting external storage become an uncontrolled write surface.
 - External locations and volumes should respect ownership, workspace binding, and read-only constraints where the feature is explicitly for reference or ingestion.
 - Writes for governed platform data should land in platform-managed catalogs and storage unless the user explicitly changes the governance model.
