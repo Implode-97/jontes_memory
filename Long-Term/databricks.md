@@ -87,7 +87,30 @@
 - In Databricks Apps, default SDK clients such as `WorkspaceClient()` use the app service principal from injected environment variables. User pass-through requires explicitly using the forwarded `x-forwarded-access-token`.
 - When debugging app data-access failures, trace every SQL Statements call, Files API call, Unity Catalog table read, volume-file read, and helper fallback to its exact credential source. Mixed SDK default auth, direct REST calls with user tokens, and Streamlit caches can make path discovery and file reads run under different principals.
 - When user authorization is intended, prefer fail-fast diagnostics over silent service-principal fallback. Check declared user scopes, app resource grants, and any cached per-user tokens before treating a UC or volume read failure as a table, path, or Spark issue.
+- For Apps PoCs proving user pass-through credentials, avoid declaring SQL warehouses, Unity Catalog tables, volumes, or other data resources under the app resource, because those grant permissions to the app service principal. Declare only required `user_api_scopes` such as `iam.current-user:read`, `sql`, and `files.files`, then pass the forwarded token explicitly to SQL connector or `WorkspaceClient(host=..., token=..., auth_type="pat")`.
+- Current Databricks Apps docs support `pyproject.toml` plus `uv.lock`; older guidance that Python apps only support `requirements.txt` is stale. Re-check official docs when vendored Databricks skills disagree.
+- In `/Users/jnyjc2/code/innovation-week/everything_app`, preserve the pass-through-only boundary unless the user explicitly switches the goal to app service-principal access. Do not cache user-token SQL or SDK clients with `st.cache_resource`, because forwarded tokens are per-user/session and can rotate.
 - For the Databricks App volume image-loading user-token auth support trace, use Jira `CAV-133791`; it is under Firecrackers Support PI2616 and records the explicit forwarded-token `WorkspaceClient(..., auth_type="pat")` fix.
+
+## Databricks Agent Skills
+
+- The stable `databricks-agent-skills` guidance for Databricks Apps PoCs is AppKit-first: start with `databricks-core`, `databricks-apps`, `databricks-app-design`, and `databricks-dabs`, especially the platform guide, other-frameworks, AppKit overview, SQL queries, frontend, testing, files, and custom-endpoints references.
+- Prefer installing or using the Databricks Codex plugin or global CLI-installed skills for general Databricks Apps work. When the user asks to copy Databricks skills into a project, create a focused snapshot under `.agents/skills/databricks-agent-skills` with the stable upstream `skills/` tree plus only relevant experimental Python, SDK, DBSQL, docs, Apps Python, and Unity Catalog skills.
+- Do not vendor the full upstream `databricks-agent-skills` repo into app projects unless explicitly needed. Exclude `.agents/**` from Databricks Asset Bundle sync and project linting so the copied skills remain agent-only support material.
+
+## RAPIDS Notebook Project
+
+- `/Users/jnyjc2/code/innovation-week/RAPIDS` is a notebook-first local VS Code project using UV, not a package/library. Keep local files as source of truth, investigation notes under `docs/`, and make the local-vs-remote execution boundary explicit.
+- The current RAPIDS target is the classic GPU ML cluster `jnyjc2_explore_rapids` with cluster ID `0616-082231-shovpy4t`, Databricks CLI profile `DEFAULT`, DBR `17.3.x-scala2.13`, Spark `4.0.0`, GPU node `g4dn.xlarge`, and Databricks Connect `17.3.*` currently resolving to `17.3.9`.
+- For this RAPIDS repo, use `requires-python = ">=3.12,<3.13"`, keep `ipykernel` in the dev dependency group, do not install standalone `pyspark` beside `databricks-connect`, and keep `.env` aligned with `DATABRICKS_CONFIG_PROFILE=DEFAULT` plus `DATABRICKS_CLUSTER_ID=0616-082231-shovpy4t`.
+- Earlier serverless or Connect 18.2 guidance for this project is superseded by the DBR 17.3 GPU cluster target unless the compute target changes and dependencies, docs, and config are retargeted together.
+
+## RAPIDS Accelerator For Apache Spark
+
+- As of 2026-06-16, NVIDIA's Databricks RAPIDS support matrix topped out at RAPIDS Accelerator `26.04.2` on DBR `17.3 ML LTS GPU` with Spark 4.0.0 and Scala 2.13. Databricks had newer runtimes, but they were not yet listed in NVIDIA's Databricks RAPIDS Spark matrix, so re-check NVIDIA before recommending a newer DBR.
+- For DBR 17.3 RAPIDS Spark work, use the `rapids-4-spark_2.13` jar, not older `_2.12` examples. Keep RAPIDS Spark plugin guidance separate from RAPIDS Python/cuDF/cuML notebook setup.
+- Recommend Photon disabled, one-GPU workers, cluster-scoped init scripts, and RAPIDS qualification-tool validation for Databricks Spark GPU acceleration pilots unless newer NVIDIA docs supersede this.
+- NVIDIA's Spark RAPIDS repo/docs naming has moved toward `cudf-spark`: `github.com/NVIDIA/spark-rapids` redirects to `github.com/NVIDIA/cudf-spark`, and docs are also under `nvidia.github.io/cudf-spark`. Treat this as the same cuDF-backed Spark RAPIDS plugin unless NVIDIA documents a product split; artifacts remain `rapids-4-spark_<scala>`, plugin class `com.nvidia.spark.SQLPlugin`, and configs `spark.rapids.*`.
 
 ## Platform Bootstrap And Admin Groups
 

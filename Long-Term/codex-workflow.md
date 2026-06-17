@@ -19,6 +19,11 @@
 - Before editing Terraform or Terragrunt, compare plausible fixes against existing modules, ownership groups, and lifecycle boundaries. Prefer extending the current ownership model over adding a separate feature boundary when the existing design has a natural place for the fix.
 - Empty tracked governance files such as root `CODEOWNERS` should be flagged in repo hygiene reviews unless documented as intentional. Prefer deleting placeholders, adding a concise intent comment, or adding the smallest valid rule after owner eligibility is verified.
 
+## Agent Tool Security
+
+- Treat Omnigent/Omniagent as an open-source local or self-hosted agent harness, not a Databricks SaaS that automatically collects repositories. The main risk is configured persistence and forwarding: session messages, tool calls, outputs, usage, files/artifacts, and comments may be stored, while prompts and context go to the selected model provider.
+- For Omnigent trials, recommend local-only first, no sensitive repos, disabled update checks/tracing unless needed, no `OMNIGENT_OTEL_CAPTURE_CONTENT`, tight sandbox and environment passthrough, OIDC/accounts for shared deployments, and review of provider/model retention policies. Bare local server auth is off by default; deployed or containerized servers enable auth by default.
+
 ## Skill Authoring
 
 - Skills for this user must be cold-start usable by an agent with no surrounding conversation context. State the purpose, required inputs, source of truth, workflow, decision rules, and expected output explicitly.
