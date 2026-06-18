@@ -38,6 +38,13 @@
 - In modular E2E stages, each stage should assert the feature it owns. Put metastore output contract checks in a dedicated `metastore_assert` stage; downstream workspace or sandbox stages may read upstream outputs as fixture values but should not repackage or re-test broad upstream output bundles.
 - After the sandbox catalog wrapper package rename, catalog units should use `aws-databricks-account-catalog-wrapper-sandbox/aws`, not the old `aws-databricks-catalog-wrapper-sandbox/aws`. Renamed GitLab Terraform module packages can reset to version `0.1.0`, so verify the exact package name and version in the registry instead of assuming monotonic versions across renames.
 
+## Data Product Catalogs
+
+- Keep Databricks data product catalogs as a separate public feature from sandbox catalogs. Prefer a new regional `dbcore` unit such as `units/dbx_data_product_catalogs` with its own Terraform wrapper and YAML registry, not product modes inside the sandbox catalog wrapper.
+- The V1 regional input file is `data_products.yml`, with each product row containing an explicit `env_cycles` map. Product-level `compute_profile_ids` and provider-neutral raw `oidc_federation` entries should copy to each env-cycle service principal.
+- Each active data product env-cycle should create one service principal, federation policies, bucket, external location, and catalog. Use sandbox patterns for storage pools, lifecycle guards, and tests where the analogy is clean, but keep workspace assignment and catalog workspace bindings out of this feature until a sibling feature owns them.
+- Data product lifecycle states are `enabled`, `destroy_pending`, and `destroyed`; row removal is guarded until a destroyed apply. `break_glass_enabled` lives per env cycle, defaults true except for `prd`, and grants `grp_team_<owner_team_key>_owner`.
+
 ## Live Terragrunt Reviews
 
 - Treat live `_common_vars.hcl` as a contract with generated units and provider parents, not a constants bag. Preserve stable enterprise facts such as naming prefix, backend bucket/region, Databricks account facts, and default tags; check every active consumer before treating a missing local or stale tag as low-risk cleanup.
