@@ -19,6 +19,10 @@
 - Before editing Terraform or Terragrunt, compare plausible fixes against existing modules, ownership groups, and lifecycle boundaries. Prefer extending the current ownership model over adding a separate feature boundary when the existing design has a natural place for the fix.
 - Empty tracked governance files such as root `CODEOWNERS` should be flagged in repo hygiene reviews unless documented as intentional. Prefer deleting placeholders, adding a concise intent comment, or adding the smallest valid rule after owner eligibility is verified.
 
+## Planning And Review Workflow
+
+- For substantial IaC feature plans, the user prefers a coordinator loop that combines recalled memory, current code, official-source verification, the `iac-code-style` conventions, a dedicated `grill-me` thread when useful, and independent review agents for domain/security, Terraform contract, Terragrunt wiring, tests/CI, and KISS/YAGNI critique. Produce evidence-backed decision packets, score each iteration before implementation, capture durable learnings, and create handoffs at phase boundaries or blockers.
+
 ## Agent Tool Security
 
 - Treat Omnigent/Omniagent as an open-source local or self-hosted agent harness, not a Databricks SaaS that automatically collects repositories. The main risk is configured persistence and forwarding: session messages, tool calls, outputs, usage, files/artifacts, and comments may be stored, while prompts and context go to the selected model provider.
