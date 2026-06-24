@@ -6,6 +6,7 @@
 - Default to project `CAV`, issue type `Story`, component `Sys.Firecrackers`, and the Firecrackers epic such as `CAV-130873` when the user has not overridden them.
 - Resolve sprint, component, product owner, and other mandatory values from Jira metadata and known-good reference stories such as `CAV-131342` rather than guessing.
 - Keep the Jira description concise and readable; place detailed implementation context in the Need field. Do not paste raw markdown plans directly into Jira fields.
+- For the CAV Story Need custom field, `customfield_11317`, write Jira wiki-style text directly through `additionalFields`, such as `h2. Context` headings and `#` ordered-list lines, then verify read-back. Descriptions and comments should still use the Jira MCP formatting skill's safe Markdown path; raw Jira `#` list markers in comments can be converted as headings by the MCP comment converter.
 - For child work under a CAV Story, use issue type `Technical task` with the required `parent` field set to the parent Story key, usually via `customFields.parent = {"key": "<story-key>"}` in Jira tool calls. Do not set Epic Link on that child task because it inherits the epic association through the parent Story; the review transition name is `Review`. If Jira assignee lookup by email is rejected in CAV, use username `jnyjc2` unless a concrete account ID is available.
 
 ## Firecrackers Epic Loop
