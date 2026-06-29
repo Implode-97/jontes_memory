@@ -24,6 +24,7 @@
 
 - Treat Terraform outputs as public API. Preserve narrow downstream contracts, automation guards, and provider-created IDs that callers consume; push test-only diagnostics, provider internals, and whole child-module passthroughs out before the module API freezes.
 - Avoid publishing duplicate scalar and composite shapes for the same facts unless a real consumer needs both. Prefer one canonical output shape for grants, workspace bindings, storage credentials, catalogs, policies, and wrapper AWS/MWS identifiers.
+- Primitive modules should expose scalar outputs and narrowly scoped maps such as workspace bindings, not broad composite objects that mirror provider resources. If a wrapper needs a composite public contract, compose it in the wrapper from primitive scalar outputs and include only fields the wrapper owns for downstream consumers.
 - Tests should not freeze broad output mirrors. If a value is only used by the module's own `.tftest.hcl`, prefer direct resource, data-source, or local assertions instead of adding a public output.
 - Diagnostic outputs can be justified for real bootstrap troubleshooting, such as Databricks metastore readiness, workspace URL/ID materialization, or generated policy JSON, but label or minimize them and keep sensitive values marked sensitive.
 - For caller-prepared object modules, compare `variables.tf`, `outputs.tf`, and tests against `main.tf`. Validate and expose resource-owned behavior first; treat broad echoes of caller taxonomy, tags, raw principals, or rendered JSON as cleanup candidates unless downstream automation consumes them.
@@ -41,7 +42,7 @@
 - For IAM policy documents, prefer exact normalized assertions for expected statements: Sid uniqueness, effect, complete action sets, and complete resource sets. Use subset checks only for low-risk smoke tests and make messages match what is actually asserted.
 - When README or tests tell users to create local `.tfvars` or `.auto.tfvars` fixture files, verify the exact documented path is ignored. Real-provider fixture files can contain account IDs, ARNs, names, or environment values that should not be committed.
 - For dependent child resources, Terraform destroys children before parents. Databricks Unity Catalog modules intentionally use separate explicit workspace-binding resources so non-anchor workspace access is removed before the securable is deleted.
-- For Databricks external locations, do not treat `enable_file_events` as a standalone boolean. Terraform requires queue configuration such as `file_event_queue` plus the matching IAM, tests, and rollout notes; keep file events outside the default module contract until that complete feature is implemented.
+- For Databricks external locations, do not treat `enable_file_events` as a standalone boolean. Terraform requires a complete file-events contract, such as `file_events = null` for disabled, `mode = "managed_sqs"` for Databricks-managed SQS, or `mode = "provided_sqs"` with a caller-supplied queue URL, plus matching IAM, tests, and rollout notes.
 
 ## Provider And Version Constraints
 
