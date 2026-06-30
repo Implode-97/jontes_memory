@@ -10,6 +10,7 @@
 - Terraform module release helpers should treat tag history and breaking-change markers as safety-critical: hard-fail if `git fetch --tags` cannot refresh the release source of truth, scan full commit messages for `BREAKING CHANGE` footers, and validate all package/version inputs before uploading immutable registry artifacts.
 - When republishing Terraform wrappers after dependency lookup fixes, README-only touches to wrappers and direct child modules can be intentional version triggers rather than Terraform behavior changes. Preserve those touches unless the release strategy changes so wrappers can pin freshly published child module versions.
 - If a CI test command excludes packages, such as `go test $(go list ./... | grep -v ...)`, verify the excluded package has an active replacement lane included by root CI. An unused job file in `ci/` is not coverage.
+- Reusable wrapper modules that require caller-supplied aliased providers, such as `databricks.account`, can fail plain standalone `terraform validate` with missing provider configuration even when provider-aware module tests or live callers are correct. Keep `fmt`, `init`, TFLint, and module-test coverage, but add those wrappers to the generic static-loop validate skip list instead of changing module contracts just to satisfy standalone validation.
 - Check current repository state before applying these historical CI preferences; they came from earlier module-repository work and may have evolved.
 
 ## Data Platform Terragrunt Catalog
