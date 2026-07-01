@@ -75,6 +75,7 @@
 - Grant data product service principals by Databricks application ID, not display name. Break-glass grants should use group display names such as `grp_team_<owner_team_key>_owner`, with ordering against account team identities so derived groups exist before catalog grants.
 - Data product OIDC federation policy names should stay conservative lowercase hyphen-separated IDs, and wrapper validation should cap policies at 20 per data product environment.
 - V1 data product catalog outputs should expose one canonical per-product environment contract under `data_products`, nesting `catalog`, `service_principal`, `grants`, and `oidc_federation_policies`. Keep lifecycle and shared regional outputs separate, and do not publish empty workspace-binding outputs until workspace assignment becomes an implemented sibling feature.
+- Data product catalog features should not carry compute-profile or cluster-policy intent unless an implemented resource consumes it now. Keep the catalog feature focused on service principals, OIDC federation, buckets, external locations, catalogs, lifecycle, and catalog grants; put product execution policy inference or grants in a deliberate compute/workspace sibling feature rather than unused catalog metadata such as `compute_profile_ids`.
 
 ## Cluster Policies
 
