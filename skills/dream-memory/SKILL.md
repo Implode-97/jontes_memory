@@ -48,11 +48,28 @@ If `Short-Term` contains no `.md` files, exit successfully without creating a ne
 
 ## Long-Term Shape
 
-Prefer one compact file per category at first, such as `jira.md`, `terragrunt.md`, `ci.md`, `docs.md`, or `codex-workflow.md`.
+Read `Long-Term/index.md` before promoting memory. Preserve its scoped structure:
 
-Long-term files may be refactored. Split a broad file when it becomes mixed, too large to scan, or hard to recall by filename. For example, split `jira.md` into `jira-formatting.md`, `jira-story-creation.md`, and `jira-sprint-review.md`, then keep `jira.md` as a short index if useful.
+- `global/`: reusable preferences and implementation conventions.
+- `domains/`: platform or technology semantics.
+- `repos/`: repository contracts, wiring, and current state.
+- `projects/`: active initiative or Jira context.
 
-Dreaming may rewrite, compact, rename, and split long-term files. It is not append-only. Preserve meaning, remove duplication, and log every refactor.
+Route a learning to the narrowest existing file. Prefer repository identity from the working context, then domain and global convention. Do not create a new file for one isolated note when an existing scoped owner fits.
+
+Keep one canonical owner per rule. Repo files may name the domain contract they implement, but should not restate it in detail. Separate durable rules from volatile facts under `Current State — Verify`.
+
+Use concise files and bullets:
+
+- One decision per bullet.
+- Put rationale or evidence in a short child bullet only when it changes future use.
+- Prefer under 1,200 words and roughly 10–50 concise rules per file; split earlier when scopes mix.
+- Split files that mix scopes or exceed those limits.
+- Merge or delete duplicate rules after choosing the canonical owner.
+
+Every scoped file should keep file-level frontmatter with `scope`, `topics`, `stability`, and `last-reviewed`; add `repo`, `project`, or `domain` when applicable. Update `Long-Term/index.md` whenever files, aliases, or ownership change.
+
+Dreaming may rewrite, compact, rename, split, and merge long-term files. It is not append-only. Preserve durable meaning, move temporary incident evidence out of ordinary recall, and log every refactor.
 
 ## Importance Model
 
