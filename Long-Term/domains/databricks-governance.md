@@ -3,7 +3,7 @@ scope: domain
 domain: databricks
 topics: [identities, groups, workspace-assignment, entitlements, admin, bootstrap]
 stability: mixed
-last-reviewed: 2026-07-10
+last-reviewed: 2026-07-15
 ---
 
 # Databricks Governance
@@ -27,6 +27,12 @@ last-reviewed: 2026-07-10
 - Active placement rows (`enabled` or `destroy_pending`) must reference enabled teams; ignore destroyed placements.
 - Every guard that consumes generated inputs must validate required `teams`, `workspace_teams`, and lifecycle output shapes itself or run after a required-input guard.
 - Never treat a missing or malformed lifecycle output as proof of first apply.
+
+## Service Principal Boundaries
+
+- Team-bound service principals belong to their contributor, privileged-contributor, or owner role groups per deployable region. Grant the group `roles/servicePrincipal.user` and inherit workspace entitlements and data privileges through group membership.
+- Standalone CI identities use an independent regional lifecycle and generic OIDC policies. Name them `sp_<region>_team_<team>_ci_<name>` and grant explicit workspace `USER` plus `workspace_access`, sandbox `USE_CATALOG` plus `CREATE_SCHEMA`, and only the fixed catalog reads they need.
+- Keep external-location creator grants with the external-location feature. Prefer one standalone identity per permission/lifecycle boundary without enforcing repository cardinality; remove downstream assignments before the identity and its sandbox.
 
 ## Platform Bootstrap And Admin Groups
 

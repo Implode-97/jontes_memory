@@ -2,7 +2,7 @@
 scope: global
 topics: [terragrunt, generated-stacks, dependencies, guards, terratest, yaml]
 stability: mixed
-last-reviewed: 2026-07-10
+last-reviewed: 2026-07-15
 ---
 
 # Terragrunt Preferences
@@ -11,6 +11,7 @@ last-reviewed: 2026-07-10
 
 - Validate rendered `.terragrunt-stack` units in their parent context; raw `units/*` templates may depend on root and common files.
 - Keep dependency-free normalization in `locals`. Read proven `dependency.*.outputs` in inputs or generated files, not in locals.
+- Derive dependency mock keys from the same registries as real references. Give each logical identity a deterministic, distinct, valid-shaped mock ID so Terraform sets and maps do not collapse separate objects.
 - A green HCL validation may use dependency mocks. Inspect warnings and use a no-mock or real-state-safe check when output availability matters.
 - Do not scrape sibling `.terragrunt-cache` output during the same stack apply. Prefer dependency contracts, staged stacks, or caller-supplied normalized inputs.
 - When Terragrunt fails after cache generation but before hooks or Terraform, a named direct-Terraform control from the rendered cache can isolate Terragrunt plumbing from generated config or provider failures.
@@ -20,7 +21,7 @@ last-reviewed: 2026-07-10
 - Unsigned JSON consumed by shell or `jq` uses `disable_signature = true` with `if_exists = "overwrite"`.
 - Do not use `overwrite_terragrunt` for unsigned files; ownership checks can fail with bare `EOF`. Reserve it for signed generated files.
 - Lifecycle guards must fail closed, report all violations, protect final-row removal, and preserve staged `enabled -> destroy_pending -> destroyed` transitions.
-- Missing, malformed, or renamed Terraform outputs are not first-apply bootstrap when state exists.
+- Classify bootstrap by tracked resource addresses, not by whether `terraform state pull` returns JSON: a valid initialized or destroyed backend can contain zero resources. Allow no/empty state, but fail when addresses exist and lifecycle output is missing or malformed, or when state reads fail through backend, auth, network, or corruption errors.
 - Keep paired-guard validation ownership explicit: a small shared validator or deliberate duplicated fail-closed prelude.
 - Build guard projections from named, typed locals. Do not use broad `try()` defaults that turn malformed nested YAML into empty values.
 - Required active inputs should fail loudly; default only genuine omission or explicit null for optional values.

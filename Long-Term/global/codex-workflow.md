@@ -1,8 +1,8 @@
 ---
 scope: global
-topics: [codex, memory, skills, investigation, planning, agent-security]
+topics: [codex, memory, skills, pets, investigation, planning, agent-security]
 stability: mixed
-last-reviewed: 2026-07-10
+last-reviewed: 2026-07-15
 ---
 
 # Codex Workflow
@@ -35,6 +35,11 @@ last-reviewed: 2026-07-10
 - Repo-local skills are discovered from `.agents/skills`, not a top-level `skills/` directory.
 - Use the canonical user-wide skills when applicable: `ci-log-triage`, `jira-mcp-formatting`, `score-code-with-agents`, and `handoff` under `/Users/jnyjc2/.codex/skills/`.
 - If newly installed or edited skill metadata does not appear, restart Codex or open a new task before rewriting the skill.
+
+## Codex Pets
+
+- Keep pet packages and hatch/QA runs under user-level Codex directories such as `~/.codex/pets/<pet-id>` and `~/.codex/pet-runs/<run-name>`, not inside unrelated project repositories.
+- Flint is the user's established pet: a compact plush northern badger in midnight navy, slate, silver, and warm copper, with a calm, friendly, methodical, evidence-led personality. Preserve this identity unless the user requests a redesign.
 
 ## Agent Tool Security
 

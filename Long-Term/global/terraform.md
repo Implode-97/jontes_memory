@@ -2,7 +2,7 @@
 scope: global
 topics: [terraform, modules, providers, inputs, outputs, tests, versions]
 stability: durable
-last-reviewed: 2026-07-10
+last-reviewed: 2026-07-15
 ---
 
 # Terraform Module Preferences
@@ -22,6 +22,7 @@ last-reviewed: 2026-07-10
 - Keep contracts narrow until a real consumer requires flexibility.
 - Lifecycle-sensitive registries should not silently default to empty unless empty bootstrap is an explicit contract.
 - Wrapper object inputs must match child shapes or transform explicitly in a named local with focused tests.
+- Before wiring a cross-repository wrapper field, verify the published typed-object input and output contract. Terraform object conversion can discard unsupported extra attributes, making an accepted-looking input a no-op.
 - Put exact naming-family policy near wrappers and generators; leaf modules should enforce only the hygiene they own.
 - Prefer resource-shaped generic inputs such as `inline_policy_json`; do not imply semantic IAM validation when only JSON syntax is checked.
 - Use `git mv` for module renames so review history remains legible.

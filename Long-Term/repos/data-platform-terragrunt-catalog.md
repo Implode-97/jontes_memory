@@ -3,7 +3,7 @@ scope: repo
 repo: data-platform-terragrunt-catalog
 topics: [terragrunt, catalog, platform-e2e, guards, generated-stack, databricks, data-products]
 stability: mixed
-last-reviewed: 2026-07-10
+last-reviewed: 2026-07-15
 ---
 
 # data-platform-terragrunt-catalog
@@ -23,10 +23,9 @@ last-reviewed: 2026-07-10
 - Keep Codex review asynchronous and non-authoritative relative to format, guard, and platform E2E jobs.
 - Pin Terragrunt through `TERRAGRUNT_VERSION` and the checksum-verified installer; the Alpine image tag identifies Terraform more reliably than Terragrunt.
 - Guard-test jobs must install `jq` before running generated shell hooks.
-- CI module sources must use registry packages unless the caller explicitly supplies a local source override.
+- CI module sources must use registry packages unless the caller explicitly supplies an existing local source override. For a new cross-repository contract, publish a modules release candidate first, pin that exact RC in the catalog branch, and fail early when neither source resolves.
 - Give OIDC/STS credentials enough lifetime for the test and deferred cleanup; parse credentials structurally and preflight them.
 - Before rerunning a failed shared environment, inspect the first failure, cleanup result, and leaked AWS, Databricks, or Terragrunt resources.
-- If cleanup reports `BucketNotEmpty` on workspace root storage, empty the E2E bucket or use protected recovery; do not add implicit `force_destroy` to the reusable secure-bucket primitive.
 
 ## State, Apply, And Cleanup
 
@@ -34,7 +33,8 @@ last-reviewed: 2026-07-10
 - Do not assume local state or DynamoDB locking. Terraform janitors need initialized cache directories with generated backend metadata.
 - On Terragrunt v1.1, use `terragrunt stack run --backend-bootstrap apply`; do not place the flag after `--`.
 - Never pre-bootstrap all generated units when downstream provider/input generation requires dependency outputs.
-- Try root stack destroy first, then reverse-order generated-unit Terraform janitors. Preserve the copied tree when cleanup fails.
+- Before root stack destroy, quiesce E2E compute, resolve known workspace root-bucket outputs while state is intact, verify strong E2E identity such as prefix and run tags, and empty those buckets. Do not expose implicit `force_destroy` through the reusable production workspace or secure-bucket modules.
+- A failed pre-destroy drain or canonical root destroy keeps CI red. Use reverse-order generated-unit Terraform janitors only for leak recovery; recovery must not turn a failed canonical lifecycle into a passing result. Preserve the copied tree when cleanup fails.
 - Keep API force deletion in a separate protected/manual recovery path with deterministic test-resource filters and dry-run output.
 - A later S3 `NoSuchBucket` may mask the original `CreateBucket` failure. Inspect CloudTrail, IAM, SCP, and request tags before changing command syntax.
 - Creation-time bucket tags require `s3:TagResource` in addition to `s3:CreateBucket` and `s3:PutBucketTagging`.
@@ -72,7 +72,7 @@ last-reviewed: 2026-07-10
 ## Data Product Catalogs
 
 - Keep `dbx_data_product_catalogs` separate from sandbox catalogs with its own wrapper and `data_products.yml` registry.
-- Each row has an explicit `env_cycles` map and copies provider-neutral OIDC federation into each environment principal.
+- Each row has an explicit `env_cycles` map; environment-specific federation and owner/lifecycle semantics follow `domains/databricks-unity-catalog.md`.
 - Each active environment creates one service principal, federation policies, bucket, external location, and catalog.
 - Lifecycle states are `enabled`, `destroy_pending`, and `destroyed`; row removal is blocked until destroyed apply.
 - `break_glass_enabled` is per environment, defaults true except for production, and grants the owner-team group.

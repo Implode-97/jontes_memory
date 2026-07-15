@@ -2,7 +2,7 @@
 scope: index
 topics: [memory-routing, recall, aliases]
 stability: durable
-last-reviewed: 2026-07-10
+last-reviewed: 2026-07-15
 ---
 
 # Long-Term Memory Index
@@ -22,7 +22,7 @@ Route by scope before searching by keyword. Read the smallest relevant files; se
 
 - AWS accounts, profiles, caller identity: `global/aws.md`.
 - CI investigations, GitLab pipelines, release safety: `global/ci.md`.
-- Codex memory, skills, agent workflow, investigation style: `global/codex-workflow.md`.
+- Codex memory, skills, pets, agent workflow, investigation style: `global/codex-workflow.md`.
 - Documentation, READMEs, ADRs, plans: `global/docs.md`.
 - Git branches, integration branches, linked worktrees: `global/git.md`.
 - Jira stories, Need fields, Firecrackers loop, sprint summaries: `global/jira.md`.

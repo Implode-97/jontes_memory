@@ -3,7 +3,7 @@ scope: domain
 domain: databricks
 topics: [unity-catalog, catalogs, external-locations, volumes, workspace-bindings, storage]
 stability: mixed
-last-reviewed: 2026-07-10
+last-reviewed: 2026-07-15
 ---
 
 # Databricks Unity Catalog
@@ -39,6 +39,9 @@ last-reviewed: 2026-07-10
 - Do not grant storage-credential privileges or default `READ_FILES`, `WRITE_FILES`, `MANAGE`, `ALL_PRIVILEGES`, `CREATE_MANAGED_STORAGE`, or `EXTERNAL_USE_LOCATION`.
 - Keep `external_locations.yml` terse. Derive one credential per role and reject unsupported `assignments.data_products` at the guard boundary.
 - File events are a complete opt-in object: `null` when disabled, `managed_sqs` without a queue URL, or `provided_sqs` with a caller-owned queue URL.
+- Sandbox managed file events use `enable_file_events`, default false, and map only to `managed_sqs`. Keep shared storage-credential teardown permissions even when every flag is false; IAM permission alone creates no messaging resources or usage cost.
+- For managed file-event IAM, `sqs:ListQueues`, `sns:ListTopics`, and `sns:Unsubscribe` require `Resource = "*"`; keep resource-capable create, read, and teardown actions scoped to the owned bucket, queue, and topic families. Assert actions and resources exactly in policy tests.
+- Estimate file-event messaging from object creates, updates, deletes, retries, batching, and SQS receive/delete/empty-receive metrics. Aggregate S3 requests, inventory/list calls, stored bytes, and object size are not event-count proxies; use scoped activity metrics or a representative pilot.
 - Canonicalize an S3 URL once from caller input and reuse it for desired external-location and catalog storage-root configuration. Never feed provider-normalized output formatting back into desired inputs.
 
 ## Volumes And Data Access
@@ -56,6 +59,10 @@ last-reviewed: 2026-07-10
 - Keep productionized data products separate from team sandboxes and assign each a repository-bound service principal with OIDC/federation.
 - Model service principals, federation, catalog ownership, and target environments explicitly; team groups do not directly control production products.
 - Each `product_key + env_cycle` owns one service principal, federation policies, bucket, external location, and catalog.
+- Define `oidc_federation` per environment rather than copying one product policy. Production uses the `sub` claim restricted to `main` or `master`; non-production may match exact `project_path`, which trusts every token type from that project unless GitLab job rules narrow issuance.
+- Keep data-product OIDC YAML provider-neutral: `issuer`, `subject`, optional `subject_claim`, and optional `description`. Let Databricks generate policy IDs and default the audience; expose applied policies by generated ID.
+- Active and `destroy_pending` product environments must reference a non-destroyed owner team; both enabled and disabled teams are valid. Destroyed tombstones need no owner metadata.
+- The staged product lifecycle must cover data-bearing S3 storage, not only Databricks resources. Use either guarded bucket emptying or a default-false, resource-shaped force-destroy switch enabled only at the destructive lifecycle boundary, and test the bucket behavior.
 - Grant product principals by application ID, not display name. Break-glass uses `grp_team_<owner_team_key>_owner` after team identities exist.
 - Keep federation policy names lowercase and hyphenated and cap policies at 20 per product environment.
 - Expose one canonical `data_products` output per environment with catalog, service principal, grants, and federation policy data.
